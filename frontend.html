@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FluxoNorte — Operação Turno Crítico</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f0;color:#1a1a1a;min-height:100vh}
+.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid #e5e5e0;padding:1.25rem 0;position:sticky;top:0;height:100vh}
+.logo{padding:0 1rem 1.25rem;border-bottom:1px solid #e5e5e0;margin-bottom:0.75rem}
+.logo-title{font-size:16px;font-weight:600;color:#1a1a1a;display:flex;align-items:center;gap:8px}
+.logo-sub{font-size:11px;color:#888;margin-top:3px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 1rem;cursor:pointer;font-size:13px;color:#555;transition:background 0.15s;border-right:3px solid transparent}
+.nav-item:hover{background:#f4f4f0;color:#1a1a1a}
+.nav-item.active{background:#f0faf6;color:#0f6e56;font-weight:500;border-right-color:#1D9E75}
+.nav-item i{font-size:17px}
+.main{padding:2rem;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:1.5rem}
+.cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:1.75rem}
+.metric{background:#fff;border:1px solid #e5e5e0;border-radius:10px;padding:1.1rem 1.25rem}
+.metric-label{font-size:12px;color:#888;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em}
+.metric-value{font-size:28px;font-weight:600;color:#1a1a1a}
+.metric-value.green{color:#0f6e56}
+.metric-value.amber{color:#854f0b}
+.metric-value.blue{color:#185fa5}
+.metric-value.red{color:#a32d2d}
+.table-wrap{background:#fff;border:1px solid #e5e5e0;border-radius:10px;overflow:hidden;margin-bottom:1.25rem}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f9f9f6;padding:9px 14px;text-align:left;font-weight:500;color:#888;border-bottom:1px solid #e5e5e0;font-size:12px;text-transform:uppercase;letter-spacing:0.04em}
+td{padding:10px 14px;border-bottom:1px solid #f0f0ec;color:#1a1a1a;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf7}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-green{background:#e1f5ee;color:#0f6e56}
+.badge-amber{background:#faeeda;color:#854f0b}
+.badge-blue{background:#e6f1fb;color:#185fa5}
+.badge-red{background:#fcebeb;color:#a32d2d}
+.badge-gray{background:#f1efe8;color:#5f5e5a}
+.badge-alta{background:#faece7;color:#993c1d}
+.form-group{margin-bottom:1.1rem}
+.form-label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+input,select,textarea{width:100%;padding:8px 11px;font-size:13px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;outline:none;transition:border 0.15s,box-shadow 0.15s}
+input:focus,select:focus{border-color:#1D9E75;box-shadow:0 0 0 3px #1D9E7522}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;font-size:13px;border:1px solid #ddd;border-radius:8px;cursor:pointer;background:#fff;color:#1a1a1a;transition:background 0.15s;font-weight:500}
+.btn:hover{background:#f4f4f0}
+.btn:active{transform:scale(0.98)}
+.btn-primary{background:#1D9E75;color:#fff;border-color:#0f6e56}
+.btn-primary:hover{background:#0f6e56}
+.btn-danger{background:#fcebeb;color:#a32d2d;border-color:#f09595}
+.btn-danger:hover{background:#f7c1c1}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+.empty{text-align:center;padding:2.5rem;color:#aaa;font-size:13px}
+.alert{padding:10px 15px;border-radius:8px;font-size:13px;margin-bottom:1rem}
+.alert-error{background:#fcebeb;color:#a32d2d;border:1px solid #f09595}
+.alert-success{background:#e1f5ee;color:#0f6e56;border:1px solid #5dcaa5}
+.search-bar{display:flex;gap:10px;margin-bottom:1.1rem}
+.search-bar input{max-width:280px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:#fff;border-radius:14px;border:1px solid #e5e5e0;padding:1.75rem;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:1.5rem;color:#1a1a1a}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #f0f0ec}
+.rank-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f0f0ec}
+.rank-row:last-child{border-bottom:none}
+.rank-num{font-size:12px;font-weight:600;color:#aaa;width:20px}
+.progress-bar{flex:1;height:6px;background:#f0f0ec;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:#1D9E75;border-radius:4px;transition:width 0.4s}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.col-title{font-size:14px;font-weight:600;margin-bottom:0.75rem;color:#1a1a1a}
+</style>
+</head>
+<body>
+
+<div class="app">
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-title"><i class="ti ti-truck"></i> FluxoNorte</div>
+    <div class="logo-sub">Operação Turno Crítico</div>
+  </div>
+  <div class="nav-item active" onclick="goTo('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+  <div class="nav-item" onclick="goTo('pedidos',this)"><i class="ti ti-package"></i> Pedidos</div>
+  <div class="nav-item" onclick="goTo('entregadores',this)"><i class="ti ti-user"></i> Entregadores</div>
+  <div class="nav-item" onclick="goTo('relatorio',this)"><i class="ti ti-chart-bar"></i> Relatório</div>
+</nav>
+
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-title">Visão geral</div>
+  <div class="cards-grid" id="dash-metrics"></div>
+  <div class="two-col">
+    <div>
+      <div class="col-title">Pedidos urgentes</div>
+      <div class="table-wrap" id="dash-urgentes"></div>
+    </div>
+    <div>
+      <div class="col-title">Ranking de entregadores</div>
+      <div class="table-wrap" id="dash-ranking"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PEDIDOS -->
+<div class="page" id="page-pedidos">
+  <div class="section-header">
+    <div class="page-title" style="margin:0">Pedidos</div>
+    <button class="btn btn-primary" onclick="abrirModalPedido()"><i class="ti ti-plus"></i> Novo pedido</button>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="filtro-pedido" placeholder="Buscar por ID ou cliente..." oninput="renderPedidos()">
+    <select id="filtro-status" onchange="renderPedidos()">
+      <option value="">Todos os status</option>
+      <option>Pendente</option>
+      <option>Em Rota</option>
+      <option>Entregue</option>
+      <option>Cancelado</option>
+    </select>
+  </div>
+  <div id="alert-pedido"></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Cliente</th><th>Prioridade</th><th>Status</th><th>Entregador</th><th></th></tr></thead>
+      <tbody id="tbody-pedidos"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ENTREGADORES -->
+<div class="page" id="page-entregadores">
+  <div class="section-header">
+    <div class="page-title" style="margin:0">Entregadores</div>
+    <button class="btn btn-primary" onclick="abrirModalEntregador()"><i class="ti ti-plus"></i> Novo entregador</button>
+  </div>
+  <div id="alert-entregador"></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Nome</th><th>Veículo</th><th>Capacidade</th><th>Status</th><th>Pedidos</th></tr></thead>
+      <tbody id="tbody-entregadores"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RELATÓRIO -->
+<div class="page" id="page-relatorio">
+  <div class="page-title">Relatório operacional</div>
+  <div class="cards-grid" id="rel-metrics"></div>
+  <div class="two-col">
+    <div>
+      <div class="col-title">Pedidos por status</div>
+      <div class="table-wrap" id="rel-status"></div>
+    </div>
+    <div>
+      <div class="col-title">Alta prioridade ativos</div>
+      <div class="table-wrap" id="rel-alta"></div>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem">
+    <div class="col-title">Ranking de entregadores</div>
+    <div class="table-wrap" id="rel-ranking"></div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- MODAL NOVO PEDIDO -->
+<div id="modal-pedido" style="display:none" class="modal-overlay">
+<div class="modal">
+  <div class="modal-title">Novo pedido</div>
+  <div id="alert-modal-pedido"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">ID do pedido (ex: A1234)</label><input id="p-id" placeholder="A1234" maxlength="5"></div>
+    <div class="form-group"><label class="form-label">Prioridade</label><select id="p-prioridade"><option>Alta</option><option selected>Normal</option></select></div>
+  </div>
+  <div class="form-group"><label class="form-label">Nome do cliente</label><input id="p-cliente" placeholder="Nome completo"></div>
+  <div class="form-group"><label class="form-label">Endereço</label><input id="p-endereco" placeholder="Rua, número, bairro"></div>
+  <div class="form-group"><label class="form-label">Descrição</label><input id="p-descricao" placeholder="Conteúdo do pedido"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="fecharModal('modal-pedido')">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarPedido()"><i class="ti ti-check"></i> Salvar pedido</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL NOVO ENTREGADOR -->
+<div id="modal-entregador" style="display:none" class="modal-overlay">
+<div class="modal">
+  <div class="modal-title">Novo entregador</div>
+  <div id="alert-modal-ent"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">ID (4 dígitos)</label><input id="e-id" placeholder="0012" maxlength="4"></div>
+    <div class="form-group"><label class="form-label">Veículo</label><select id="e-veiculo"><option>Moto</option><option>Carro</option><option>Van</option></select></div>
+  </div>
+  <div class="form-group"><label class="form-label">Nome do entregador</label><input id="e-nome" placeholder="Nome completo"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="fecharModal('modal-entregador')">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarEntregador()"><i class="ti ti-check"></i> Salvar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL EDITAR PEDIDO -->
+<div id="modal-edit-pedido" style="display:none" class="modal-overlay">
+<div class="modal">
+  <div class="modal-title">Atualizar pedido — <span id="modal-edit-id" style="color:#1D9E75;font-family:monospace"></span></div>
+  <div id="alert-modal-edit"></div>
+  <input type="hidden" id="ep-id">
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Status</label>
+      <select id="ep-status"><option>Pendente</option><option>Em Rota</option><option>Entregue</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Associar entregador</label>
+      <select id="ep-entregador"><option value="">— nenhum —</option></select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" onclick="cancelarPedidoModal()"><i class="ti ti-ban"></i> Cancelar pedido</button>
+    <button class="btn" onclick="fecharModal('modal-edit-pedido')">Fechar</button>
+    <button class="btn btn-primary" onclick="atualizarPedido()"><i class="ti ti-check"></i> Salvar</button>
+  </div>
+</div>
+</div>
+
+<script>
+const pedidos = {};
+const entregadores = {};
+
+function goTo(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'pedidos') renderPedidos();
+  if (page === 'entregadores') renderEntregadores();
+  if (page === 'relatorio') renderRelatorio();
+}
+
+function idPedidoValido(id) {
+  return id.length === 5 && /^[A-Za-z]/.test(id) && /^\d{4}$/.test(id.slice(1));
+}
+function idEntValido(id) {
+  return id.length === 4 && /^\d{4}$/.test(id);
+}
+
+function badgeStatus(s) {
+  const m = {Pendente:'badge-amber','Em Rota':'badge-blue',Entregue:'badge-green',Cancelado:'badge-gray'};
+  return `<span class="badge ${m[s]||'badge-gray'}">${s}</span>`;
+}
+function badgePrior(p) {
+  return p === 'Alta' ? `<span class="badge badge-alta">Alta</span>` : `<span class="badge badge-gray">Normal</span>`;
+}
+function badgeDisp(d) {
+  return d ? `<span class="badge badge-green">Disponível</span>` : `<span class="badge badge-red">Indisponível</span>`;
+}
+function veiIcon(v) {
+  const m = {Moto:'ti-motorbike',Carro:'ti-car',Van:'ti-van'};
+  return `<i class="ti ${m[v]||'ti-truck'}" style="font-size:15px;vertical-align:-2px;margin-right:5px"></i>`;
+}
+
+function showAlert(id, msg, tipo='error') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 3500);
+}
+
+function abrirModalPedido() {
+  ['p-id','p-cliente','p-endereco','p-descricao'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('p-prioridade').value = 'Normal';
+  document.getElementById('modal-pedido').style.display = 'flex';
+}
+function abrirModalEntregador() {
+  ['e-id','e-nome'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('modal-entregador').style.display = 'flex';
+}
+function fecharModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function salvarPedido() {
+  const id = document.getElementById('p-id').value.trim().toUpperCase();
+  const cliente = document.getElementById('p-cliente').value.trim();
+  const endereco = document.getElementById('p-endereco').value.trim();
+  const prioridade = document.getElementById('p-prioridade').value;
+  const descricao = document.getElementById('p-descricao').value.trim();
+  if (!idPedidoValido(id)) return showAlert('alert-modal-pedido','ID inválido. Use 1 letra + 4 dígitos (ex: A1234).');
+  if (pedidos[id]) return showAlert('alert-modal-pedido','Já existe um pedido com esse ID.');
+  if (!cliente || !endereco || !descricao) return showAlert('alert-modal-pedido','Preencha todos os campos obrigatórios.');
+  pedidos[id] = {id, cliente, endereco, prioridade, descricao, status:'Pendente', id_entregador: null};
+  fecharModal('modal-pedido');
+  renderPedidos();
+  renderDashboard();
+}
+
+function salvarEntregador() {
+  const id = document.getElementById('e-id').value.trim();
+  const nome = document.getElementById('e-nome').value.trim();
+  const veiculo = document.getElementById('e-veiculo').value;
+  if (!idEntValido(id)) return showAlert('alert-modal-ent','ID inválido. Use exatamente 4 dígitos numéricos.');
+  if (entregadores[id]) return showAlert('alert-modal-ent','Já existe um entregador com esse ID.');
+  if (!nome) return showAlert('alert-modal-ent','Nome é obrigatório.');
+  entregadores[id] = {id, nome, veiculo, pedidos: [], disponibilidade: true};
+  fecharModal('modal-entregador');
+  renderEntregadores();
+  renderDashboard();
+}
+
+function editarPedido(id) {
+  const p = pedidos[id];
+  if (!p) return;
+  document.getElementById('ep-id').value = id;
+  document.getElementById('modal-edit-id').textContent = id;
+  document.getElementById('ep-status').value = p.status === 'Cancelado' ? 'Pendente' : p.status;
+  const sel = document.getElementById('ep-entregador');
+  sel.innerHTML = '<option value="">— nenhum —</option>';
+  Object.values(entregadores).forEach(e => {
+    if (e.disponibilidade || e.id === p.id_entregador) {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.text = e.id + ' — ' + e.nome;
+      if (e.id === p.id_entregador) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  });
+  document.getElementById('modal-edit-pedido').style.display = 'flex';
+}
+
+function atualizarPedido() {
+  const id = document.getElementById('ep-id').value;
+  const p = pedidos[id];
+  if (!p) return;
+  if (p.status === 'Cancelado') return showAlert('alert-modal-edit','Pedido cancelado não pode ser alterado.');
+  const novoStatus = document.getElementById('ep-status').value;
+  const novoEnt = document.getElementById('ep-entregador').value;
+
+  if (p.id_entregador && p.id_entregador !== novoEnt) {
+    const ant = entregadores[p.id_entregador];
+    if (ant) { ant.pedidos = ant.pedidos.filter(x => x !== id); ant.disponibilidade = ant.pedidos.length < 3; }
+    p.id_entregador = null;
+  }
+  if (novoEnt && novoEnt !== p.id_entregador) {
+    const ent = entregadores[novoEnt];
+    if (!ent) return showAlert('alert-modal-edit','Entregador não encontrado.');
+    if (!ent.disponibilidade && ent.id !== p.id_entregador) return showAlert('alert-modal-edit','Entregador indisponível — limite de 3 pedidos atingido.');
+    if (!ent.pedidos.includes(id)) ent.pedidos.push(id);
+    p.id_entregador = novoEnt;
+    ordenarFila(novoEnt);
+    ent.disponibilidade = ent.pedidos.length < 3;
+    if (novoStatus !== 'Entregue') p.status = 'Em Rota';
+  }
+  if (novoStatus === 'Entregue' && p.id_entregador) {
+    const ent = entregadores[p.id_entregador];
+    if (ent) { ent.pedidos = ent.pedidos.filter(x => x !== id); ent.disponibilidade = ent.pedidos.length < 3; }
+    p.id_entregador = null;
+  }
+  p.status = novoStatus;
+  fecharModal('modal-edit-pedido');
+  renderPedidos(); renderDashboard(); renderEntregadores();
+}
+
+function cancelarPedidoModal() {
+  const id = document.getElementById('ep-id').value;
+  const p = pedidos[id];
+  if (!p || p.status === 'Cancelado') return;
+  if (!confirm('Cancelar pedido ' + id + '? Esta ação não pode ser desfeita.')) return;
+  if (p.id_entregador) {
+    const ent = entregadores[p.id_entregador];
+    if (ent) { ent.pedidos = ent.pedidos.filter(x => x !== id); ent.disponibilidade = ent.pedidos.length < 3; }
+    p.id_entregador = null;
+  }
+  p.status = 'Cancelado';
+  fecharModal('modal-edit-pedido');
+  renderPedidos(); renderDashboard();
+}
+
+function ordenarFila(id_ent) {
+  const fila = entregadores[id_ent].pedidos;
+  const alta = fila.filter(p => pedidos[p] && pedidos[p].prioridade === 'Alta');
+  const norm = fila.filter(p => pedidos[p] && pedidos[p].prioridade !== 'Alta');
+  entregadores[id_ent].pedidos = [...alta, ...norm];
+}
+
+function renderPedidos() {
+  const filtro = (document.getElementById('filtro-pedido').value || '').toLowerCase();
+  const filtroStatus = document.getElementById('filtro-status').value;
+  const tbody = document.getElementById('tbody-pedidos');
+  const lista = Object.values(pedidos)
+    .filter(p => (!filtro || p.id.toLowerCase().includes(filtro) || p.cliente.toLowerCase().includes(filtro)))
+    .filter(p => !filtroStatus || p.status === filtroStatus)
+    .sort((a,b) => (a.prioridade==='Alta'?0:1)-(b.prioridade==='Alta'?0:1));
+  if (!lista.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty">Nenhum pedido encontrado.</td></tr>`; return; }
+  tbody.innerHTML = lista.map(p => `<tr>
+    <td style="font-weight:600;font-family:monospace;font-size:12px">${p.id}</td>
+    <td>${p.cliente}<br><span style="font-size:11px;color:#aaa">${p.endereco}</span></td>
+    <td>${badgePrior(p.prioridade)}</td>
+    <td>${badgeStatus(p.status)}</td>
+    <td style="color:#888;font-size:12px">${p.id_entregador ? (entregadores[p.id_entregador] ? entregadores[p.id_entregador].nome : p.id_entregador) : '—'}</td>
+    <td>${p.status !== 'Cancelado' ? `<button class="btn" style="font-size:12px;padding:5px 11px" onclick="editarPedido('${p.id}')"><i class="ti ti-edit"></i> Editar</button>` : ''}</td>
+  </tr>`).join('');
+}
+
+function renderEntregadores() {
+  const tbody = document.getElementById('tbody-entregadores');
+  const lista = Object.values(entregadores);
+  if (!lista.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty">Nenhum entregador cadastrado.</td></tr>`; return; }
+  tbody.innerHTML = lista.map(e => `<tr>
+    <td style="font-weight:600;font-family:monospace;font-size:12px">${e.id}</td>
+    <td>${e.nome}</td>
+    <td>${veiIcon(e.veiculo)}${e.veiculo}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:12px;color:#888;min-width:28px">${e.pedidos.length}/3</span>
+        <div style="width:70px;height:6px;background:#f0f0ec;border-radius:4px;overflow:hidden">
+          <div style="width:${Math.round(e.pedidos.length/3*100)}%;height:100%;background:#1D9E75;border-radius:4px"></div>
+        </div>
+      </div>
+    </td>
+    <td>${badgeDisp(e.disponibilidade)}</td>
+    <td style="font-size:12px;color:#888;font-family:monospace">${e.pedidos.join(', ') || '—'}</td>
+  </tr>`).join('');
+}
+
+function renderDashboard() {
+  const ps = Object.values(pedidos);
+  const es = Object.values(entregadores);
+  const total = ps.length;
+  const pendentes = ps.filter(p=>p.status==='Pendente').length;
+  const emRota = ps.filter(p=>p.status==='Em Rota').length;
+  const entregues = ps.filter(p=>p.status==='Entregue').length;
+  document.getElementById('dash-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Total de pedidos</div><div class="metric-value">${total}</div></div>
+    <div class="metric"><div class="metric-label">Pendentes</div><div class="metric-value amber">${pendentes}</div></div>
+    <div class="metric"><div class="metric-label">Em rota</div><div class="metric-value blue">${emRota}</div></div>
+    <div class="metric"><div class="metric-label">Entregues</div><div class="metric-value green">${entregues}</div></div>
+  `;
+  const urgentes = ps.filter(p=>p.prioridade==='Alta'&&p.status!=='Cancelado'&&p.status!=='Entregue');
+  document.getElementById('dash-urgentes').innerHTML = urgentes.length
+    ? `<table><thead><tr><th>ID</th><th>Cliente</th><th>Status</th></tr></thead><tbody>${urgentes.map(p=>`<tr><td style="font-family:monospace;font-size:12px;font-weight:600">${p.id}</td><td>${p.cliente}</td><td>${badgeStatus(p.status)}</td></tr>`).join('')}</tbody></table>`
+    : `<div class="empty">Nenhum pedido urgente no momento.</div>`;
+  const ranking = es.map(e=>({nome:e.nome,id:e.id,qtd:e.pedidos.length})).sort((a,b)=>b.qtd-a.qtd);
+  const max = ranking[0]?.qtd || 1;
+  document.getElementById('dash-ranking').innerHTML = ranking.length
+    ? `<div>${ranking.map((r,i)=>`<div class="rank-row"><span class="rank-num">${i+1}</span><span style="flex:0 0 120px;font-size:13px">${r.nome}</span><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(r.qtd/Math.max(max,1)*100)}%"></div></div><span style="font-size:12px;color:#888;min-width:30px;text-align:right">${r.qtd}</span></div>`).join('')}</div>`
+    : `<div class="empty">Nenhum entregador cadastrado.</div>`;
+}
+
+function renderRelatorio() {
+  const ps = Object.values(pedidos);
+  const total = ps.length;
+  const pendentes = ps.filter(p=>p.status==='Pendente').length;
+  const emRota = ps.filter(p=>p.status==='Em Rota').length;
+  const entregues = ps.filter(p=>p.status==='Entregue').length;
+  const cancelados = ps.filter(p=>p.status==='Cancelado').length;
+  const alta = ps.filter(p=>p.prioridade==='Alta'&&p.status!=='Cancelado').length;
+  document.getElementById('rel-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Total de pedidos</div><div class="metric-value">${total}</div></div>
+    <div class="metric"><div class="metric-label">Alta prioridade</div><div class="metric-value amber">${alta}</div></div>
+    <div class="metric"><div class="metric-label">Taxa de entrega</div><div class="metric-value green">${total?Math.round(entregues/total*100):0}%</div></div>
+    <div class="metric"><div class="metric-label">Cancelados</div><div class="metric-value red">${cancelados}</div></div>
+  `;
+  document.getElementById('rel-status').innerHTML = `<table><tbody>
+    <tr><td>Pendente</td><td>${badgeStatus('Pendente')}</td><td style="text-align:right;font-weight:600">${pendentes}</td></tr>
+    <tr><td>Em Rota</td><td>${badgeStatus('Em Rota')}</td><td style="text-align:right;font-weight:600">${emRota}</td></tr>
+    <tr><td>Entregue</td><td>${badgeStatus('Entregue')}</td><td style="text-align:right;font-weight:600">${entregues}</td></tr>
+    <tr><td>Cancelado</td><td>${badgeStatus('Cancelado')}</td><td style="text-align:right;font-weight:600">${cancelados}</td></tr>
+  </tbody></table>`;
+  const altaLista = ps.filter(p=>p.prioridade==='Alta'&&p.status!=='Cancelado');
+  document.getElementById('rel-alta').innerHTML = altaLista.length
+    ? `<table><thead><tr><th>ID</th><th>Cliente</th><th>Status</th></tr></thead><tbody>${altaLista.map(p=>`<tr><td style="font-family:monospace;font-size:12px">${p.id}</td><td>${p.cliente}</td><td>${badgeStatus(p.status)}</td></tr>`).join('')}</tbody></table>`
+    : `<div class="empty">Nenhum pedido com alta prioridade ativo.</div>`;
+  const es = Object.values(entregadores).map(e=>({...e,qtd:e.pedidos.length})).sort((a,b)=>b.qtd-a.qtd);
+  document.getElementById('rel-ranking').innerHTML = es.length
+    ? `<table><thead><tr><th>#</th><th>ID</th><th>Nome</th><th>Veículo</th><th>Pedidos ativos</th></tr></thead><tbody>${es.map((e,i)=>`<tr><td style="color:#aaa;font-size:12px">${i+1}</td><td style="font-family:monospace;font-size:12px">${e.id}</td><td>${e.nome}${i===0&&e.qtd>0?' <span class="badge badge-green" style="margin-left:6px">líder</span>':''}</td><td>${veiIcon(e.veiculo)}${e.veiculo}</td><td style="font-weight:600">${e.qtd}</td></tr>`).join('')}</tbody></table>`
+    : `<div class="empty">Nenhum entregador cadastrado.</div>`;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['modal-pedido','modal-entregador','modal-edit-pedido'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+  }
+});
+
+renderDashboard();
+</script>
+</body>
+</html>

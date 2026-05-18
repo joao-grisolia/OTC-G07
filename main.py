@@ -3,6 +3,7 @@
 #  Disciplina: APPC (Prática) - PUC Campinas 2026
 # =============================================================
 
+
 # ── Estruturas principais ────────────────────────────────────
 # Dicionário de pedidos: chave = ID do pedido
 pedidos = {}
