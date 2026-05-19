@@ -9,17 +9,9 @@ def cadastrarPedido():
     os.system('cls');
     idPedido = input('ID do pedidto (ex:B2345): ');
     while not (len(idPedido) == 5 and idPedido[0].isalpha() and idPedido[1:].isdigit()):
-        # ele so entra no while se as condicoes nao forem  True
-        # por isso do not
-        # as condicoes são o tamanho do idPedido tem que ser 5 (len(idPedido) == 5)
-        # o primeiro indice tem que ser uma letra idPedido[0].isalpha()
-        # o outros tem que que ser numero idPedido[1:].isdigit()
-        # enquanto nao (while not) cumprir com nenhum desse requisitos entra aqui no while
         print('-> ID INVALIDO <- Digite um id valido')
         idPedido = input('ID do pedidto (ex:B2345): ');
-    # aqui tem que fazer uma validacao pra ver se ja tem um
-    # pedido com o idPedido ja cadastrado, idPedido duplicado
-        
+
     nomeCliente = str(input('Nome do cliente: '));
     endereco = str(input('Digite o endereco: '));
     prioridade = str(input('Prioridade (Alta/Normal): '));
@@ -54,7 +46,6 @@ def cadastrarEntregador():
         while id_pedido not in [pedido['idPedido'] for pedido in listaPedidos]:
             print('ID do pedido nao encontrado. Digite um ID valido ou deixe em branco.')
             id_pedido = input('ID do pedido associado (deixe em branco se nao tiver): ')
-    #falta colocar disponibilidade do pedido!
     print(listaEntregadores)
     print('Entregador cadastrado com sucesso')
     input('Pressione ENTER para continuar')
@@ -145,6 +136,97 @@ def atualizarPedido():
                     
  
 
+def consultarInformacoes():
+    n = -1
+    while n != 0:
+        os.system('cls')
+        print('''
+        1. Pedidos pendentes
+        2. Pedidos entregues
+        3. Buscar pedido por ID
+        4. Entregadores disponiveis
+        5. Entregas de um entregador
+        0. Voltar
+        ''')
+        n = int(input('-> '))
+
+        if n == 1:
+            os.system('cls')
+            print('--- PEDIDOS PENDENTES ---')
+            encontrados = 0
+            for pedido in listaPedidos:
+                if pedido['status'] == 'Pendente':
+                    print(pedido)
+                    encontrados += 1
+            if encontrados == 0:
+                print('Nenhum pedido pendente encontrado.')
+            input('Pressione ENTER para continuar')
+
+        elif n == 2:
+            os.system('cls')
+            print('--- PEDIDOS ENTREGUES ---')
+            encontrados = 0
+            for pedido in listaPedidos:
+                if pedido['status'] == 'Entregue':
+                    print(pedido)
+                    encontrados += 1
+            if encontrados == 0:
+                print('Nenhum pedido entregue encontrado.')
+            input('Pressione ENTER para continuar')
+
+        elif n == 3:
+            os.system('cls')
+            idPedido = input('ID do pedido a buscar: ')
+            encontrado = False
+            for pedido in listaPedidos:
+                if pedido['idPedido'] == idPedido:
+                    print(f'Pedido encontrado: {pedido}')
+                    encontrado = True
+                    break
+            if not encontrado:
+                print('Pedido nao encontrado.')
+            input('Pressione ENTER para continuar')
+
+        elif n == 4:
+            os.system('cls')
+            print('--- ENTREGADORES DISPONIVEIS ---')
+            encontrados = 0
+            for entregador in listaEntregadores:
+                if entregador.get('idPedido') is None:
+                    print(entregador)
+                    encontrados += 1
+            if encontrados == 0:
+                print('Nenhum entregador disponivel.')
+            input('Pressione ENTER para continuar')
+
+        elif n == 5:
+            os.system('cls')
+            idEntregador = input('ID do entregador: ')
+            encontrado = False
+            for entregador in listaEntregadores:
+                if entregador['idEntregador'] == idEntregador:
+                    encontrado = True
+                    break
+            if not encontrado:
+                print('Entregador nao encontrado.')
+            else:
+                print(f'--- ENTREGAS DO ENTREGADOR {idEntregador} ---')
+                entregas = 0
+                for pedido in listaPedidos:
+                    if pedido.get('idEntregador') == idEntregador:
+                        print(pedido)
+                        entregas += 1
+                if entregas == 0:
+                    print('Nenhuma entrega associada a esse entregador.')
+            input('Pressione ENTER para continuar')
+
+        elif n == 0:
+            return
+
+        else:
+            print('Opcao invalida.')
+            input('Pressione ENTER para continuar')
+
 def menu():
     print('FLUXO NORTE')
     print('''
@@ -177,4 +259,6 @@ def main():
             cadastrarEntregador();
         elif opcao == 3:
             atualizarPedido();
+        elif opcao in (6, 7, 8, 9, 10):
+            consultarInformacoes();
 main()
