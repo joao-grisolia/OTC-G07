@@ -51,25 +51,26 @@ def cadastrarEntregador():
     input('Pressione ENTER para continuar')
 
 def atualizarPedido():
-    print('''
+    
+    n = -1
+    while n != 0:
+        os.system('cls')
+
+        print('''
         1. Alterar o status do pedido
         2. Cancelar Pedido
         3. Associar entregadores a pedidos
         4. Remover associação de entregador
-''')
-    
-    n = -1
+        5. Voltar
+        ''')
 
-    while n != 0:
-
-        os.system('cls')
-        atualizarPedido()
         n = int(input("-> "))
 
         if (n == 1):
-
+            os.system('cls')
             idPedido = input('ID do pedido a ser atualizado: ')
             while idPedido not in [pedido['idPedido'] for pedido in listaPedidos]:
+                os.system('cls')
                 print('ID do pedido nao encontrado. Digite um ID valido.')
                 idPedido = input('ID do pedido a ser atualizado: ')
             
@@ -111,7 +112,7 @@ def atualizarPedido():
             input('Pressione ENTER para continuar')
 
         if (n == 2):
-
+            os.system('cls')
             idPedido = input('ID do pedido a ser cancelado: ')
             while idPedido not in [pedido['idPedido'] for pedido in listaPedidos]:
                 print('ID do pedido nao encontrado. Digite um ID valido.')
@@ -133,6 +134,9 @@ def atualizarPedido():
                         print('Seu pedido não será cancelado. Pressione ENTER para continuar.')
                         menu()
 
+        if (n == 5):
+            os.system('cls')
+            return
                     
  
 
