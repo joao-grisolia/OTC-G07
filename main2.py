@@ -227,6 +227,67 @@ def consultarInformacoes():
             print('Opcao invalida.')
             input('Pressione ENTER para continuar')
 
+def RelatoriosOperacionais():
+    os.system('cls')
+    print('--- RELATORIOS OPERACIONAIS ---')
+    print('''
+     1. Total de pedidos
+     2. Pedidos por status
+     3. Pedidos de alta prioridade
+     4. Entregador com maior numero de entregas
+     0. Voltar 
+    ''')
+    opc = int(input('-> '))
+
+    if opc == 1:
+        totalPedidos = len(listaPedidos)
+        print(f'Total de pedidos: {totalPedidos}')
+
+    elif opc == 2:
+        pedidos_por_status = {}
+        for status in listaStatusPedido:
+            pedidos_por_status[status] = 0
+        for pedido in listaPedidos:
+            pedidos_por_status[pedido['status']] += 1
+        for status, quantidade in pedidos_por_status.items():
+            print(f'{status}: {quantidade}')
+
+    elif opc == 3:
+        pedidos_alta_prioridade = []
+        for pedido in listaPedidos:
+            if pedido['prioridade'] == 'Alta':
+                pedidos_alta_prioridade.append(pedido)
+        print('--- PEDIDOS DE ALTA PRIORIDADE ---')
+        for pedido in pedidos_alta_prioridade:
+            print(pedido)
+
+    elif opc == 4:
+        entregas_por_entregador = {}
+        for pedido in listaPedidos:
+            id_entregador = pedido['idEntregador']
+            if id_entregador is not None:
+                if id_entregador not in entregas_por_entregador:
+                    entregas_por_entregador[id_entregador] = 0
+                entregas_por_entregador[id_entregador] += 1
+
+        entregador_maximo = None
+        maximo_entregas = 0
+
+        for id_entregador in entregas_por_entregador:
+            quantidade = entregas_por_entregador[id_entregador]
+            if quantidade > maximo_entregas:
+                maximo_entregas = quantidade
+                entregador_maximo = id_entregador
+        if entregador_maximo is not None:
+            print(f'Entregador com maior numero de entregas: {entregador_maximo} ({maximo_entregas} entregas)')
+        else:
+            print('Nenhum entregador com entregas registradas.')
+    elif opc == 0:
+        return
+    else:
+        print('Opcao invalida.')
+    input('Pressione ENTER para continuar')
+
 def menu():
     print('FLUXO NORTE')
     print('''
