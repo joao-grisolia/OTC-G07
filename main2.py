@@ -322,4 +322,6 @@ def main():
             atualizarPedido();
         elif opcao in (6, 7, 8, 9, 10):
             consultarInformacoes();
+        elif opcao == 11:
+            RelatoriosOperacionais();
 main()
