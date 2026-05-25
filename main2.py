@@ -2,8 +2,6 @@ import os
 
 listaPedidos = []
 listaEntregadores = []
-listaPrioridades = ['Alta', 'Normal']
-listaStatusPedido = ['Pendente', 'Em Rota', 'Entregue', 'Cancelado']
 
 def cadastrarPedido():
     os.system('cls')
@@ -14,10 +12,15 @@ def cadastrarPedido():
 
     nomeCliente = str(input('Nome do cliente: '))
     endereco = str(input('Digite o endereco: '))
-    prioridade = str(input('Prioridade (Alta/Normal): '))
-    while prioridade.capitalize() not in listaPrioridades:
-        print('Prioridade invalida, digite Alta/Normal/Baixa')
-        prioridade = str(input('Prioridade (Alta/Normal/Baixa): '))
+    print('''
+          PRIORIDADE DO PEDIDO
+          1 - Alta
+          2 - Normal
+          ''')
+    prioridade = int(input('->'))
+    while prioridade != 1 and prioridade != 2:
+        print('-> PRIORIDADE INVALIDA <- Digite uma prioridade valida')
+        prioridade = int(input('->'))
     descricao = input('Descrição do pedido: ')
     
     listaPedidos.append({
@@ -81,10 +84,10 @@ def atualizarPedido():
                 1. Pendente
                 2. Em Rota
                 3. Entregue
-                4. Cancelado
+        
             ''')
             status = int(input('Novo status do pedido: '))
-            statusMap = {1: 'Pendente', 2: 'Em Rota', 3: 'Entregue', 4: 'Cancelado'}
+            statusMap = {1: 'Pendente', 2: 'Em Rota', 3: 'Entregue'}
             if status in statusMap:
                 for pedido in listaPedidos:
                     if pedido['idPedido'] == idPedido:
@@ -109,7 +112,7 @@ def atualizarPedido():
                         print('Opcao invalida.')
                         confirmacao = input("Deseja mesmo cancelar esse pedido? (s/n) -> ")
                     if confirmacao.lower() == 's':
-                        listaPedidos.remove(pedido)
+                        pedido['status'] = 'Cancelado'
                         print('Pedido cancelado com sucesso.')
                     else:
                         print('Cancelamento abortado.')
@@ -168,6 +171,19 @@ def atualizarPedido():
 
         elif n == 5:
             return
+        
+def BuscarPedidoPorID():
+    os.system('cls')
+    idPedido = input('ID do pedido a buscar: ')
+    encontrado = 0
+    for pedido in listaPedidos:
+        if pedido['idPedido'] == idPedido:
+            print(f'Pedido encontrado: {pedido}')
+            encontrado += 1
+            break
+    if not encontrado:
+        print('Pedido nao encontrado.')
+    input('Pressione ENTER para continuar')
 
 def consultarInformacoes():
     n = -1
@@ -210,11 +226,11 @@ def consultarInformacoes():
         elif n == 3:
             os.system('cls')
             idPedido = input('ID do pedido a buscar: ')
-            encontrado = False
+            encontrado = 0
             for pedido in listaPedidos:
                 if pedido['idPedido'] == idPedido:
                     print(f'Pedido encontrado: {pedido}')
-                    encontrado = True
+                    encontrado += 1
                     break
             if not encontrado:
                 print('Pedido nao encontrado.')
@@ -235,10 +251,10 @@ def consultarInformacoes():
         elif n == 5:
             os.system('cls')
             idEntregador = input('ID do entregador: ')
-            encontrado = False
+            encontrado = 0
             for entregador in listaEntregadores:
                 if entregador['idEntregador'] == idEntregador:
-                    encontrado = True
+                    encontrado += 1
                     break
             if not encontrado:
                 print('Entregador nao encontrado.')
@@ -321,6 +337,30 @@ def RelatoriosOperacionais():
         print('Opcao invalida.')
     input('Pressione ENTER para continuar')
 
+def listarPedidosPendentes():
+    os.system('cls')
+    print('--- PEDIDOS PENDENTES ---')
+    encontrados = 0
+    for pedido in listaPedidos:
+        if pedido['status'] == 'Pendente':
+            print(pedido)
+            encontrados += 1
+    if encontrados == 0:
+        print('Nenhum pedido pendente encontrado.')
+    input('Pressione ENTER para continuar')
+
+def listarPedidosEntregues():
+    os.system('cls')
+    print('--- PEDIDOS ENTREGUES ---')
+    encontrados = 0
+    for pedido in listaPedidos:
+        if pedido['status'] == 'Entregue':
+            print(pedido)
+            encontrados += 1
+    if encontrados == 0:
+        print('Nenhum pedido entregue encontrado.')
+    input('Pressione ENTER para continuar')
+
 def menu():
     print('FLUXO NORTE')
     print('''
@@ -353,7 +393,11 @@ def main():
             cadastrarEntregador()
         elif opcao == 3:
             atualizarPedido()
-        elif opcao in (6, 7, 8, 9, 10):
+        elif opcao == 6:
+            listarPedidosPendentes()
+        elif opcao == 7:
+            listarPedidosEntregues()
+        elif opcao in (8, 9, 10):
             consultarInformacoes()
         elif opcao == 11:
             RelatoriosOperacionais()
