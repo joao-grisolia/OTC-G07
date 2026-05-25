@@ -6,18 +6,18 @@ listaPrioridades = ['Alta', 'Normal']
 listaStatusPedido = ['Pendente', 'Em Rota', 'Entregue', 'Cancelado']
 
 def cadastrarPedido():
-    os.system('cls');
-    idPedido = input('ID do pedidto (ex:B2345): ');
+    os.system('cls')
+    idPedido = input('ID do pedidto (ex:B2345): ')
     while not (len(idPedido) == 5 and idPedido[0].isalpha() and idPedido[1:].isdigit()):
         print('-> ID INVALIDO <- Digite um id valido')
-        idPedido = input('ID do pedidto (ex:B2345): ');
+        idPedido = input('ID do pedidto (ex:B2345): ')
 
-    nomeCliente = str(input('Nome do cliente: '));
-    endereco = str(input('Digite o endereco: '));
-    prioridade = str(input('Prioridade (Alta/Normal): '));
+    nomeCliente = str(input('Nome do cliente: '))
+    endereco = str(input('Digite o endereco: '))
+    prioridade = str(input('Prioridade (Alta/Normal): '))
     while prioridade.capitalize() not in listaPrioridades:
-        print('Prioridade invalida, digite Alta/Normal/Baixa');
-        prioridade = str(input('Prioridade (Alta/Normal/Baixa): '));
+        print('Prioridade invalida, digite Alta/Normal/Baixa')
+        prioridade = str(input('Prioridade (Alta/Normal/Baixa): '))
     descricao = input('Descrição do pedido: ')
     
     listaPedidos.append({
@@ -33,14 +33,14 @@ def cadastrarPedido():
     input('Pressione ENTER para continuar')
     
 def cadastrarEntregador():
-    os.system('cls');
-    idEntregador = input('ID do entregador (ex:E1234): ');
+    os.system('cls')
+    idEntregador = input('ID do entregador (ex:E1234): ')
     while not (len(idEntregador) == 5 and idEntregador[0].isalpha() and idEntregador[1:].isdigit()):
         print('-> ID INVALIDO <- Digite um id valido')
-        idEntregador = input('ID do entregador (ex:E1234): ');
+        idEntregador = input('ID do entregador (ex:E1234): ')
     
-    nomeEntregador = str(input('Nome do entregador: '));
-    veiculo = str(input('Veiculo do entregador: '));
+    nomeEntregador = str(input('Nome do entregador: '))
+    veiculo = str(input('Veiculo do entregador: '))
     id_pedido = input('ID do pedido associado: ')
     if id_pedido:
         while id_pedido not in [pedido['idPedido'] for pedido in listaPedidos]:
@@ -50,36 +50,33 @@ def cadastrarEntregador():
         'idEntregador': idEntregador,
         'nome': nomeEntregador,
         'veiculo': veiculo,
-        'idPedido': id_pedido if id_pedido else None
+        'idPedido': id_pedido
     })
     print(listaEntregadores)
     print('Entregador cadastrado com sucesso')
     input('Pressione ENTER para continuar')
 
 def atualizarPedido():
-    
     n = -1
     while n != 0:
         os.system('cls')
-
         print('''
         1. Alterar o status do pedido
         2. Cancelar Pedido
-        3. Associar entregadores a pedidos
+        3. Associar entregador a pedido
         4. Remover associação de entregador
         5. Voltar
         ''')
-
         n = int(input("-> "))
 
-        if (n == 1):
+        if n == 1:
             os.system('cls')
             idPedido = input('ID do pedido a ser atualizado: ')
             while idPedido not in [pedido['idPedido'] for pedido in listaPedidos]:
                 os.system('cls')
                 print('ID do pedido nao encontrado. Digite um ID valido.')
                 idPedido = input('ID do pedido a ser atualizado: ')
-            
+
             print('''
                 1. Pendente
                 2. Em Rota
@@ -87,64 +84,90 @@ def atualizarPedido():
                 4. Cancelado
             ''')
             status = int(input('Novo status do pedido: '))
-
-            if status == 1:
+            statusMap = {1: 'Pendente', 2: 'Em Rota', 3: 'Entregue', 4: 'Cancelado'}
+            if status in statusMap:
                 for pedido in listaPedidos:
                     if pedido['idPedido'] == idPedido:
-                        pedido['status'] = 'Pendente'
-                        print('Status do pedido atualizado para Pendente')
-                        menu()
-            elif status == 2:
-                for pedido in listaPedidos:
-                    if pedido['idPedido'] == idPedido:
-                        pedido['status'] = 'Em Rota'
-                        print('Status do pedido atualizado para Em Rota')
-                        menu()
-            elif status == 3:
-                for pedido in listaPedidos:
-                    if pedido['idPedido'] == idPedido:
-                        pedido['status'] = 'Entregue'
-                        print('Status do pedido atualizado para Entregue')
-                        menu()
-            elif status == 4:
-                for pedido in listaPedidos:
-                    if pedido['idPedido'] == idPedido:
-                        pedido['status'] = 'Cancelado'
-                        print('Status do pedido atualizado para Cancelado')
-                        menu()
+                        pedido['status'] = statusMap[status]
+                        print(f'Status atualizado para {statusMap[status]}')
             else:
-                print('Opcao invalida. Status não será atualizado.')
-            
+                print('Opcao invalida.')
             input('Pressione ENTER para continuar')
 
-        if (n == 2):
+        elif n == 2:
             os.system('cls')
             idPedido = input('ID do pedido a ser cancelado: ')
             while idPedido not in [pedido['idPedido'] for pedido in listaPedidos]:
                 print('ID do pedido nao encontrado. Digite um ID valido.')
                 idPedido = input('ID do pedido a ser cancelado: ')
-            
+
             for pedido in listaPedidos:
                 if pedido['idPedido'] == idPedido:
                     print(f'Pedido encontrado: {pedido}')
-                    n = str(input("Deseja mesmo cancelar esse pedido? (s/n) -> "))
-
-                    while n.lower() != 's' and n != 'n':
-                        print('Opcao invalida. Digite s para sim ou n para nao.')
-                        n = str(input("Deseja mesmo cancelar esse pedido? (s/n) -> "))
-                    if n.lower() == 's':
+                    confirmacao = input("Deseja mesmo cancelar esse pedido? (s/n) -> ")
+                    while confirmacao.lower() not in ('s', 'n'):
+                        print('Opcao invalida.')
+                        confirmacao = input("Deseja mesmo cancelar esse pedido? (s/n) -> ")
+                    if confirmacao.lower() == 's':
                         listaPedidos.remove(pedido)
-                        input('Pedido cancelado com sucesso. Pressione ENTER para continuar')
+                        print('Pedido cancelado com sucesso.')
+                    else:
+                        print('Cancelamento abortado.')
+                    break
+            input('Pressione ENTER para continuar')
 
-                    elif n.lower() == 'n':
-                        print('Seu pedido não será cancelado. Pressione ENTER para continuar.')
-                        menu()
-
-        if (n == 5):
+        elif n == 3:
             os.system('cls')
+            idPedido = input('ID do pedido: ')
+            pedidoAlvo = None
+            for pedido in listaPedidos:
+                if pedido['idPedido'] == idPedido:
+                    pedidoAlvo = pedido
+                    break
+            if not pedidoAlvo:
+                print('Pedido nao encontrado.')
+                input('Pressione ENTER para continuar')
+                continue
+
+            idEntregador = input('ID do entregador: ')
+            entregadorAlvo = None
+            for entregador in listaEntregadores:
+                if entregador['idEntregador'] == idEntregador:
+                    entregadorAlvo = entregador
+                    break
+            if not entregadorAlvo:
+                print('Entregador nao encontrado.')
+            else:
+                pedidoAlvo['idEntregador'] = idEntregador
+                pedidoAlvo['status'] = 'Em Rota'
+                entregadorAlvo['idPedido'] = idPedido
+                print(f'Pedido {idPedido} associado ao entregador {entregadorAlvo["nome"]}.')
+            input('Pressione ENTER para continuar')
+
+        elif n == 4:
+            os.system('cls')
+            idPedido = input('ID do pedido: ')
+            pedidoAlvo = None
+            for pedido in listaPedidos:
+                if pedido['idPedido'] == idPedido:
+                    pedidoAlvo = pedido
+                    break
+            if not pedidoAlvo:
+                print('Pedido nao encontrado.')
+            elif pedidoAlvo.get('idEntregador') is None:
+                print('Nenhum entregador associado a este pedido.')
+            else:
+                idEntregador = pedidoAlvo['idEntregador']
+                for entregador in listaEntregadores:
+                    if entregador['idEntregador'] == idEntregador:
+                        entregador['idPedido'] = None
+                        break
+                pedidoAlvo['idEntregador'] = None
+                print('Associacao removida com sucesso.')
+            input('Pressione ENTER para continuar')
+
+        elif n == 5:
             return
-                    
- 
 
 def consultarInformacoes():
     n = -1
@@ -325,13 +348,13 @@ def main():
         opcao = int(input('-> '))
 
         if opcao == 1:
-            cadastrarPedido();
+            cadastrarPedido()
         elif opcao == 2:
-            cadastrarEntregador();
+            cadastrarEntregador()
         elif opcao == 3:
-            atualizarPedido();
+            atualizarPedido()
         elif opcao in (6, 7, 8, 9, 10):
-            consultarInformacoes();
+            consultarInformacoes()
         elif opcao == 11:
-            RelatoriosOperacionais();
+            RelatoriosOperacionais()
 main()
