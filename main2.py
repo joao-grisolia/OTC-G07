@@ -46,6 +46,12 @@ def cadastrarEntregador():
         while id_pedido not in [pedido['idPedido'] for pedido in listaPedidos]:
             print('ID do pedido nao encontrado. Digite um ID valido ou deixe em branco.')
             id_pedido = input('ID do pedido associado (deixe em branco se nao tiver): ')
+    listaEntregadores.append({
+        'idEntregador': idEntregador,
+        'nome': nomeEntregador,
+        'veiculo': veiculo,
+        'idPedido': id_pedido if id_pedido else None
+    })
     print(listaEntregadores)
     print('Entregador cadastrado com sucesso')
     input('Pressione ENTER para continuar')
