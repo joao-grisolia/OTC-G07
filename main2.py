@@ -21,13 +21,15 @@ def cadastrarPedido():
     while prioridade != 1 and prioridade != 2:
         print('-> PRIORIDADE INVALIDA <- Digite uma prioridade valida')
         prioridade = int(input('->'))
+    
+    
     descricao = input('Descrição do pedido: ')
     
     listaPedidos.append({
         'idPedido': idPedido,
         'cliente': nomeCliente,
         'endereco': endereco,
-        'prioridade': prioridade,
+        'prioridade': prioridade.lower(),
         'status': 'Pendente',
         'idEntregador': None
     })
@@ -293,18 +295,19 @@ def RelatoriosOperacionais():
         print(f'Total de pedidos: {totalPedidos}')
 
     elif opc == 2:
-        pedidos_por_status = {}
-        for status in listaStatusPedido:
-            pedidos_por_status[status] = 0
-        for pedido in listaPedidos:
-            pedidos_por_status[pedido['status']] += 1
-        for status, quantidade in pedidos_por_status.items():
-            print(f'{status}: {quantidade}')
+        # pedidos_por_status = {}
+        # for status in listaStatusPedido:
+        #     pedidos_por_status[status] = 0
+        # for pedido in listaPedidos:
+        #     pedidos_por_status[pedido['status']] += 1
+        # for status, quantidade in pedidos_por_status.items():
+        #     print(f'{status}: {quantidade}')
+        return None
 
     elif opc == 3:
         pedidos_alta_prioridade = []
         for pedido in listaPedidos:
-            if pedido['prioridade'] == 'Alta':
+            if pedido['prioridade'] == 'alta':
                 pedidos_alta_prioridade.append(pedido)
         print('--- PEDIDOS DE ALTA PRIORIDADE ---')
         for pedido in pedidos_alta_prioridade:
@@ -401,4 +404,7 @@ def main():
             consultarInformacoes()
         elif opcao == 11:
             RelatoriosOperacionais()
+        else:
+            input('Opção invalida, PRESSIONE ENTER')
+            return main()
 main()
